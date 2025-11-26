@@ -86,6 +86,10 @@ const statusClasses = computed(() =>
         </dl>
       </div>
 
+      <div>
+
+      </div>
+
       <section class="rounded-xl border border-border/60 bg-background p-6 shadow-sm">
         <h2 class="mb-4 text-lg font-semibold text-foreground">Content</h2>
         <div class="prose max-w-none text-sm leading-relaxed text-foreground/90 dark:prose-invert">

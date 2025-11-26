@@ -24,4 +24,14 @@ class PostFactory extends Factory
             'published' => $this->faker->boolean(),
         ];
     }
+    public function configure()
+    {
+        return $this->afterCreating(function (\App\Models\Post $post) {
+            \App\Models\Comment::factory(rand(1, 5))->create([
+                'post_id' => $post->id,
+            ]);
+        });
+    }
+
 }
+
