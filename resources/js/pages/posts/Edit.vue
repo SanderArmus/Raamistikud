@@ -8,17 +8,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { index, update } from '@/routes/posts';
 import type { BreadcrumbItem } from '@/types';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import InputError from '@/components/InputError.vue';
 
 const props = defineProps<{
     post: {
         id: number;
         title: string;
         content: string;
-        author: string;
+        author_id: number;
         published: boolean;
         created_at_formatted?: string;
         updated_at_formatted?: string;
     };
+    authors: Record<number, string>;
 }>();
 
 
@@ -31,15 +34,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 const form = useForm({
     title: props.post.title,
     content: props.post.content,
-    author: props.post.author,
+    author_id: String(props.post.author_id),
     published: props.post.published,
 });
-
 const submit = () => {
-    form.put(update.url(props.post.id), {
-        preserveScroll: true,
-    });
+    form.put(update(props.post.id).url)
 };
+
 </script>
 
 <template>
@@ -58,13 +59,26 @@ const submit = () => {
                     </p>
                 </div>
 
-                <div>
-                    <Label for="author">Author</Label>
-                    <Input id="author" v-model="form.author" />
-                    <p v-if="form.errors.author" class="text-red-600 text-sm">
-                        {{ form.errors.author }}
-                    </p>
-                </div>
+                            <div>
+                                <Label for="author">Author</Label>
+                                    <Select v-model="form.author_id">
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select an author" />
+                                    </SelectTrigger>
+                                    <SelectContent class="w-(--reka-select-trigger-width)">
+                                        <SelectGroup>
+                                        <SelectItem
+                                            v-for="(name, id) in authors"
+                                            :key="id"
+                                            :value="id"
+                                        >
+                                            {{ name }}
+                                        </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                    </Select>
+                                <InputError :message="form.errors.author_id"/>
+                            </div>
 
                 <div>
                     <Label for="content">Content</Label>
@@ -99,4 +113,4 @@ const submit = () => {
             </form>
         </div>
     </AppLayout>
-</template> 
+</template>

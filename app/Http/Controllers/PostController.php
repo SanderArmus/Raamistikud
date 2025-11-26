@@ -46,7 +46,8 @@ class PostController extends Controller
     public function edit(Post $post)
     {
         return Inertia::render('posts/Edit', [
-            'post' => $post,
+            'post' => $post->load('author:id,first_name,last_name'),
+            'authors' => Author::all()->mapWithKeys(fn($author) => [$author->id => $author->first_name . ' ' . $author->last_name]),
         ]);
     }
 
