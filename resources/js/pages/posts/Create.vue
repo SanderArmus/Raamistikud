@@ -56,21 +56,25 @@ const submit = () => {
                             </div>
                             <div>
                                 <Label for="author">Author</Label>
-                                  <Select>
+                                  <Select v-model="form.author_id">
                                     <SelectTrigger>
                                       <SelectValue placeholder="Select an author" />
                                     </SelectTrigger>
                                     <SelectContent class="w-(--reka-select-trigger-width)">
                                       <SelectGroup>
-                                        <SelectItem v-for="(name, id) in authors" :key="id" :value="id"> {{ name }}  </SelectItem>
+                                        <SelectItem
+                                          v-for="(name, id) in authors"
+                                          :key="id"
+                                          :value="id"
+                                        >
+                                          {{ name }}
+                                        </SelectItem>
                                       </SelectGroup>
                                     </SelectContent>
                                   </Select>
-                                
-                                <!-- <Input class="mt-1" id="author_id" v-model="form.author_id" /> -->
                                 <InputError :message="form.errors.author_id"/>
                             </div>
-                            
+
                             <div class="flex items-center space-x-2">
                                 <Switch id="published" />
                                 <Label for="published">Published</Label>

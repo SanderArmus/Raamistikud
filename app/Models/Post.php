@@ -19,13 +19,13 @@ class Post extends Model
         'content',
         'author_id',
         'published',
-    ];   
+    ];
 
    protected $appends = [
     'created_at_formatted',
     'updated_at_formatted',
 ];
-    
+
 
     protected function createdAtFormatted(): Attribute
     {
@@ -47,6 +47,6 @@ class Post extends Model
         return $this->belongsTo(Author::class, 'author_id');
     }
 
-    
+
 
 }
