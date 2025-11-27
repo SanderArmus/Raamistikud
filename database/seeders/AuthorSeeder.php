@@ -6,6 +6,7 @@ use App\Models\Author;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Post;
+use App\Models\Comment;
 class AuthorSeeder extends Seeder
 {
     /**
@@ -15,6 +16,7 @@ class AuthorSeeder extends Seeder
     {
         Author::factory()->count(100)
         ->has(Post::factory(3), 'posts')
+        ->has(Comment::factory(5), 'comments')
         ->create();
     }
 }

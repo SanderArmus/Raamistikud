@@ -27,8 +27,9 @@ class PostFactory extends Factory
     public function configure()
     {
         return $this->afterCreating(function (\App\Models\Post $post) {
-            \App\Models\Comment::factory(rand(1, 5))->create([
+            \App\Models\Comment::factory()->count(5)->create([
                 'post_id' => $post->id,
+                'author_id' => $post->author_id,
             ]);
         });
     }

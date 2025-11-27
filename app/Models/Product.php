@@ -2,21 +2,26 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-class Author extends Model
+
+class Product extends Model
 {
-    /** @use HasFactory<\Database\Factories\AuthorFactory> */
+    /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'name',
+        'description',
+        'price',
+        'sku',
+        'stock_quantity',
+    ];
 
     protected $appends = [
         'created_at_formatted',
         'updated_at_formatted',
-        'date_of_birth_formatted',
     ];
 
     protected function createdAtFormatted(): Attribute
@@ -25,7 +30,6 @@ class Author extends Model
             get: fn() => $this->created_at?->diffForHumans()
         );
     }
-
     protected function updatedAtFormatted(): Attribute
     {
         return Attribute::make(
@@ -33,23 +37,9 @@ class Author extends Model
         );
     }
 
-    protected function dateOfBirthFormatted(): Attribute
-    {
-        return Attribute::make(
-            get: fn() => $this->date_of_birth
-                ? \Carbon\Carbon::parse($this->date_of_birth)->toFormattedDateString()
-                : null
-        );
-    }
 
-    public function posts(): HasMany
+    public function reviews(): HasMany
     {
-        return $this->hasMany(Post::class);
-    }
-
-    public function comments(): HasMany
-    {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Review::class);
     }
 }
-

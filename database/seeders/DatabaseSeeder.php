@@ -6,6 +6,12 @@ use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Product;
+use App\Models\Review;
+use App\Models\Author;
+use App\Models\Post;
+use App\Models\Comment;
+
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -23,7 +29,10 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             AuthorSeeder::class,
-            // PostSeeder::class,
+            ProductSeeder::class,
+            ReviewSeeder::class,
+            CommentSeeder::class,
+            PostSeeder::class,
         ]);
     }
 
