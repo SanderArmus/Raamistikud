@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Testing\Fluent\Concerns\Has;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
+use App\Traits\HasFormatedDate;
 class Post extends Model
 {
 
     use HasFactory;
+    use HasFormatedDate;
 
     protected $fillable = [
         'title',
@@ -47,6 +48,8 @@ class Post extends Model
         return $this->belongsTo(Author::class, 'author_id');
     }
 
-
-
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
 }
