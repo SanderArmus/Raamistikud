@@ -1,0 +1,38 @@
+import:
+  - recipe/laravel.php
+
+config:
+  repository: 'git@github.com:SanderArmus/Raamistikud.git'
+  keep_releases: 2
+
+hosts:
+  stage:
+    hostname: 'ta24armus.itmajakas.ee'
+    http_user: virt137755
+    remote_user: virt137755
+    deploy_path: '~/domeenid/ta24armus.itmajakas.ee/raamistikud'
+
+
+tasks:
+  npm:production:
+  - run: 'cd {{release_path}} && npm ci'
+  - run: 'cd {{release_path}} && npx vite build'
+
+
+  opcache:clear:
+    - run: killall php84-cgi || true
+
+  deploy:
+    - 'deploy:prepare'
+    - 'deploy:vendors'
+    - 'npm:production'
+    - 'artisan:storage:link'
+    # - 'artisan:optimize:clear'
+    # - 'artisan:optimize'
+    - 'deploy:publish'
+
+after:
+  deploy:failed: deploy:unlock
+
+before:
+  deploy:success: opcache:clear
