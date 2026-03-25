@@ -1,6 +1,7 @@
 import:
     - recipe/laravel.php
 
+
 config:
     repository: 'git@github.com:SanderArmus/Raamistikud.git'
     keep_releases: 2
@@ -23,7 +24,7 @@ tasks:
     deploy:
         - 'deploy:prepare'
         - 'deploy:vendors'
-        - 'npm:production'
+        #- 'npm:production'
         - 'artisan:storage:link'
         # - 'artisan:optimize:clear'
         # - 'artisan:optimize'

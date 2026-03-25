@@ -2,7 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Textarea from '@/components/ui/textarea/Textarea.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { edit, index, show } from '@/routes/posts';
 import type { BreadcrumbItem } from '@/types';
@@ -20,9 +20,7 @@ type PostComment = {
 type PostPayload = {
   id: number;
   title: string;
-  content: string;
-  author: string;
-  published: boolean;
+  description: string;
   created_at: string;
   updated_at: string;
   created_at_formatted: string;
@@ -50,13 +48,6 @@ const breadcrumbs: BreadcrumbItem[] = [
   { title: props.post.title, href: show.url(props.post.id) },
 ];
 
-const statusLabel = computed(() => (props.post.published ? 'Published' : 'Draft'));
-const statusClasses = computed(() =>
-  props.post.published
-    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-    : 'bg-slate-100 text-slate-600 border border-slate-200',
-);
-
 const commentAuthorInitials = (name?: string | null) => {
   if (!name) return '?';
   return name
@@ -66,6 +57,9 @@ const commentAuthorInitials = (name?: string | null) => {
     .join('')
     .slice(0, 2);
 };
+
+const page = usePage();
+const isAdmin = computed(() => Boolean((page.props.auth?.user as any)?.is_admin));
 </script>
 
 <template>
@@ -77,16 +71,10 @@ const commentAuthorInitials = (name?: string | null) => {
         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 class="text-3xl font-semibold tracking-tight">{{ props.post.title }}</h1>
-            <p class="text-sm text-muted-foreground">
-              Written by <span class="font-medium text-foreground">{{ props.post.author }}</span>
-            </p>
+            <p class="text-sm text-muted-foreground">Post</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-3">
-            <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium" :class="statusClasses">
-              {{ statusLabel }}
-            </span>
-
             <Button as-child variant="outline">
               <Link :href="edit.url(props.post.id)">Edit Post</Link>
             </Button>
@@ -124,14 +112,11 @@ const commentAuthorInitials = (name?: string | null) => {
       <section class="rounded-xl border border-border/60 bg-background p-6 shadow-sm">
         <h2 class="mb-4 text-lg font-semibold text-foreground">Content</h2>
         <div class="prose max-w-none text-sm leading-relaxed text-foreground/90 dark:prose-invert">
-          <p class="whitespace-pre-line">{{ props.post.content }}</p>
+          <p class="whitespace-pre-line">{{ props.post.description }}</p>
         </div>
       </section>
 
-      <section
-        v-if="props.post.comments?.length"
-        class="rounded-xl border border-border/60 bg-background p-6 shadow-sm"
-      >
+      <section class="rounded-xl border border-border/60 bg-background p-6 shadow-sm">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 class="text-lg font-semibold text-foreground">Comments</h2>
           <span class="text-sm text-muted-foreground">
@@ -144,7 +129,7 @@ const commentAuthorInitials = (name?: string | null) => {
           <Button type="submit" :disabled="form.processing">Add Comment</Button>
         </form>
 
-        <ul class="space-y-4">
+        <ul v-if="props.post.comments.length" class="space-y-4">
           <li
             v-for="comment in props.post.comments"
             :key="comment.id"
@@ -167,11 +152,25 @@ const commentAuthorInitials = (name?: string | null) => {
               <span class="text-xs text-muted-foreground">#{{ comment.id }}</span>
             </div>
 
+            <div v-if="isAdmin" class="mb-2 flex justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                class="px-2"
+                @click="router.delete(`/comments/${comment.id}`, { preserveScroll: true })"
+              >
+                Delete
+              </Button>
+            </div>
+
             <p class="whitespace-pre-line text-sm leading-relaxed text-foreground/90">
               {{ comment.content }}
             </p>
           </li>
         </ul>
+        <div v-else class="text-sm opacity-70">
+          No comments yet. Be the first to add one.
+        </div>
       </section>
     </div>
   </AppLayout>

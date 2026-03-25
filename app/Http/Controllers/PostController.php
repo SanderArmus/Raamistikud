@@ -4,33 +4,61 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use App\Models\Author;
 class PostController extends Controller
 {
+    private function ensureAuthorForUser(Request $request): Author
+    {
+        $user = $request->user();
+
+        $name = trim((string) ($user?->name ?? ''));
+        $parts = $name !== '' ? preg_split('/\s+/', $name) : [];
+        $firstName = $parts[0] ?? 'Unknown';
+        $lastName = $parts[1] ?? ($parts[count($parts) - 1] ?? 'Unknown');
+
+        // Authors table requires date_of_birth; we use a safe default.
+        $defaultDob = now()->subYears(30)->toDateString();
+
+        return Author::query()->firstOrCreate(
+            ['user_id' => $user?->id],
+            [
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'date_of_birth' => $defaultDob,
+            ],
+        );
+    }
+
     public function index()
     {
         return Inertia::render('posts/Index', [
-            'posts' => Post::with('author:id,first_name,last_name')->paginate(30),
+            'posts' => Post::query()
+                ->select(['id', 'title', 'description', 'created_at', 'updated_at'])
+                ->paginate(30),
         ]);
     }
 
     public function create()
     {
-
-        return Inertia::render('posts/Create', [
-            'authors' => Author::all()->mapWithKeys(fn($author) => [$author->id => $author->first_name . ' ' . $author->last_name]),
-        ]);
+        return Inertia::render('posts/Create');
     }
 
     public function store(Request $request)
     {
-        Post::create($request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'author_id' => 'required|exists:authors,id',
-            'published' => 'boolean',
-        ]));
+            'description' => 'required|string',
+        ]);
+
+        $author = $this->ensureAuthorForUser($request);
+
+        Post::create([
+            ...$validated,
+            'author_id' => $author->id,
+        ]);
+
         return redirect()->route('posts.index');
 
 
@@ -40,7 +68,6 @@ class PostController extends Controller
     {
         return Inertia::render('posts/View', [
             'post' => $post->loadMissing([
-                'author',
                 'comments.user',
             ]),
         ]);
@@ -49,19 +76,24 @@ class PostController extends Controller
     public function edit(Post $post)
     {
         return Inertia::render('posts/Edit', [
-            'post' => $post->load('author:id,first_name,last_name'),
-            'authors' => Author::all()->mapWithKeys(fn($author) => [$author->id => $author->first_name . ' ' . $author->last_name]),
+            'post' => $post,
         ]);
     }
 
     public function update(Request $request, Post $post)
     {
-        $post->update($request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'author_id' => 'required|exists:authors,id',
-            'published' => 'boolean',
-        ]));
+            'description' => 'required|string',
+        ]);
+
+        // Keep posts owned by the current user.
+        $author = $this->ensureAuthorForUser($request);
+
+        $post->update([
+            ...$validated,
+            'author_id' => $author->id,
+        ]);
         return redirect()->route('posts.index')->with('success', 'Post updated successfully.');
     }
 
@@ -70,6 +102,25 @@ class PostController extends Controller
         $post->delete();
 
         return redirect()->back()->with('success', 'Postitus kustutatud.');
+    }
+
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer', 'distinct'],
+        ]);
+
+        Post::query()->whereIn('id', $validated['ids'])->delete();
+
+        return redirect()->route('posts.index')->with('success', 'Posts deleted.');
+    }
+
+    public function deleteAll(): RedirectResponse
+    {
+        Post::query()->delete();
+
+        return redirect()->route('posts.index')->with('success', 'All posts deleted.');
     }
 
 

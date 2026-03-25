@@ -20,12 +20,23 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
+        $email = 'test@test.ee';
+        $existing = User::query()->where('email', $email)->first();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@test.ee',
-            'password' => Hash::make('test@test.ee'),
-        ]);
+        if ($existing) {
+            $existing->update([
+                'name' => 'Test User',
+                'password' => Hash::make($email),
+                'is_admin' => true,
+            ]);
+        } else {
+            User::factory()->create([
+                'name' => 'Test User',
+                'email' => $email,
+                'password' => Hash::make($email),
+                'is_admin' => true,
+            ]);
+        }
 
         $this->call([
             AuthorSeeder::class,

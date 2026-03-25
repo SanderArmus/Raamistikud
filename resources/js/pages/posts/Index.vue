@@ -11,10 +11,11 @@ import PaginationNext from '@/components/ui/pagination/PaginationNext.vue';
 import PaginationPrevious from '@/components/ui/pagination/PaginationPrevious.vue';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { destroy, edit, show, index } from '@/routes/posts';
+import { create, destroy, edit, show, index } from '@/routes/posts';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { MoreVertical } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
 // Breadcrumbs for layout navigation
 const breadcrumbs: BreadcrumbItem[] = [
@@ -67,25 +68,75 @@ type User = {
 export type Post = {
   id: number;
   title: string;
-  content: string;
-  author_id: number;
-  published: boolean;
   created_at: string;
   updated_at: string;
   created_at_formatted: string;
   updated_at_formatted: string;
-  author: {
-    id: number;
-    first_name: string;
-    last_name: string;
-  };
-  comments?:Comment[];
 };
 
 
-defineProps<{
+const props = defineProps<{
   posts: PaginatedResponse;
 }>();
+
+const posts = computed(() => props.posts);
+
+const selectedPostIds = ref<number[]>([]);
+
+const pagePostIds = computed(() => posts.value.data.map((p) => p.id));
+
+const allSelectedOnPage = computed(() => {
+  if (pagePostIds.value.length === 0) return false;
+  return pagePostIds.value.every((id) => selectedPostIds.value.includes(id));
+});
+
+const isSelected = (id: number) => selectedPostIds.value.includes(id);
+
+const togglePostSelection = (id: number) => {
+  if (isSelected(id)) {
+    selectedPostIds.value = selectedPostIds.value.filter((x) => x !== id);
+  } else {
+    selectedPostIds.value = Array.from(new Set([...selectedPostIds.value, id]));
+  }
+};
+
+const toggleSelectAllOnPage = () => {
+  if (allSelectedOnPage.value) {
+    selectedPostIds.value = selectedPostIds.value.filter((id) => !pagePostIds.value.includes(id));
+    return;
+  }
+
+  selectedPostIds.value = Array.from(new Set([...selectedPostIds.value, ...pagePostIds.value]));
+};
+
+watch(
+  () => posts.value.current_page,
+  () => {
+    selectedPostIds.value = [];
+  },
+);
+
+const deleteSelected = () => {
+  if (selectedPostIds.value.length === 0) return;
+  if (!confirm(`Delete ${selectedPostIds.value.length} selected post(s)?`)) return;
+
+  router.post(
+    '/posts/bulk-delete',
+    { ids: selectedPostIds.value },
+    {
+      preserveScroll: true,
+      onSuccess: () => {
+        selectedPostIds.value = [];
+      },
+    },
+  );
+};
+
+const deleteAllPosts = () => {
+  if (!confirm('Delete ALL posts? This will also delete all associated comments.')) return;
+
+  router.post('/posts/delete-all', {}, { preserveScroll: true });
+};
 const deletePost = (postId: number) => {
   if (!confirm('Aga miks sa kustutad?')) return;
   router.delete(destroy.url(postId), {
@@ -109,17 +160,35 @@ const deletePost = (postId: number) => {
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-col gap-4 overflow-x-auto rounded-xl p-4">
       <!-- <pre>{{ posts }}</pre> -->
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <Button type="button" variant="destructive" :disabled="selectedPostIds.length === 0" @click="deleteSelected">
+            Delete selected
+          </Button>
+          <Button type="button" variant="outline" :disabled="posts.total === 0" @click="deleteAllPosts">
+            Delete all
+          </Button>
+        </div>
+        <Button as-child variant="default">
+          <Link :href="create().url">Add Post</Link>
+        </Button>
+      </div>
 
       <Table>
         <TableCaption>A list of your recent blog posts.</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead class="w-[100px]">ID</TableHead>
+            <TableHead class="w-[40px]">
+              <input
+                type="checkbox"
+                class="h-4 w-4 rounded border border-border/60"
+                :checked="allSelectedOnPage"
+                @change="toggleSelectAllOnPage"
+              />
+            </TableHead>
             <TableHead>Title</TableHead>
-            <TableHead>Author</TableHead>
             <TableHead class="text-right">Created at</TableHead>
             <TableHead class="text-right">Updated At</TableHead>
-            <TableHead class="text-right">Published</TableHead>
             <TableHead>
               <span class="sr-only">Actions</span>
             </TableHead>
@@ -128,16 +197,21 @@ const deletePost = (postId: number) => {
 
         <TableBody>
           <TableRow v-for="post in posts.data" :key="post.id">
-            <TableCell class="font-medium">{{ post.id }}</TableCell>
-            <TableCell>{{ post.title }}</TableCell>
-            <TableCell>{{ post.author.first_name }} {{ post.author.last_name }}</TableCell>
+            <TableCell class="w-[40px]">
+              <input
+                type="checkbox"
+                class="h-4 w-4 rounded border border-border/60"
+                :checked="isSelected(post.id)"
+                @change="togglePostSelection(post.id)"
+              />
+            </TableCell>
+            <TableCell>
+              <Link :href="show.url(post.id)" class="text-foreground hover:underline">
+                {{ post.title }}
+              </Link>
+            </TableCell>
             <TableCell class="text-right">{{ post.created_at_formatted }}</TableCell>
             <TableCell class="text-right">{{ post.updated_at_formatted }}</TableCell>
-            <TableCell class="text-right">
-              <span :class="post.published ? 'text-green-600' : 'text-gray-400'">
-                {{ post.published ? 'Yes' : 'No' }}
-              </span>
-            </TableCell>
 
             <TableCell>
               <div class="flex justify-end">

@@ -18,6 +18,7 @@ class Post extends Model
     protected $fillable = [
         'title',
         'content',
+        'description',
         'author_id',
         'published',
     ];
@@ -51,5 +52,25 @@ class Post extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
+    }
+
+    /**
+     * Keep `description` and legacy `content` in sync.
+     * This lets us gradually migrate the UI/API without breaking older data.
+     */
+    public function getDescriptionAttribute($value)
+    {
+        if (! empty($value)) {
+            return $value;
+        }
+
+        return $this->attributes['content'] ?? null;
+    }
+
+    public function setDescriptionAttribute($value): void
+    {
+        $this->attributes['description'] = $value;
+        // Legacy column used by existing migration/UI. Keep it synced.
+        $this->attributes['content'] = $value;
     }
 }

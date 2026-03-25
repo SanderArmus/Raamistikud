@@ -6,14 +6,24 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, MapPin } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Weather',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Markers',
+        href: '/markers',
+        icon: MapPin,
+    },
+    {
+        title: 'Blog',
+        href: '/posts',
+        icon: BookOpen,
     },
 ];
 

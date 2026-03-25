@@ -94,7 +94,7 @@ const submit = () => {
                         </div>
                     </div>
                 </form>
-                <pre>{{ form }}</pre>
+                <!-- Debug output removed: form state object was rendering on screen. -->
             </div>
         </div>
     </AppLayout>
