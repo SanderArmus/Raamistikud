@@ -19,6 +19,10 @@
     RewriteRule ^ %1 [L,R=301]
 
     # Send Requests To Front Controller...
+    # Some hosting environments can get stuck in an internal redirect loop if
+    # `index.php` itself is re-written again. Prevent rewriting when the URI
+    # already looks like a real file (has an extension), like `/favicon.ico`.
+    RewriteCond %{REQUEST_URI} !\.[^/]+$
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]

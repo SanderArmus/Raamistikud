@@ -3,7 +3,7 @@ import:
 
 
 config:
-    repository: 'git@github.com:SanderArmus/Raamistikud.git'
+    repository: 'https://github.com/SanderArmus/Raamistikud.git'
     keep_releases: 2
 
 hosts:
@@ -14,6 +14,10 @@ hosts:
         deploy_path: '~/domeenid/www.ta24armus.itmajakas.ee/raamistikud'
 
 tasks:
+    db:setup:
+        - run: 'cd {{release_path}} && mkdir -p database && touch database/database.sqlite'
+        - run: 'cd {{release_path}} && php artisan migrate --force'
+
     npm:production:
         - run: 'cd {{release_path}} && npm ci'
         - run: 'cd {{release_path}} && npx vite build'
@@ -24,7 +28,8 @@ tasks:
     deploy:
         - 'deploy:prepare'
         - 'deploy:vendors'
-        #- 'npm:production'
+        - 'db:setup'
+        - 'npm:production'
         - 'artisan:storage:link'
         # - 'artisan:optimize:clear'
         # - 'artisan:optimize'

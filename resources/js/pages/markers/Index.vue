@@ -229,7 +229,7 @@ watch(
 
       <div class="rounded-xl border border-sidebar-border/70 bg-background/30 p-4 dark:border-sidebar-border">
         <div class="flex items-center justify-between gap-3">
-          <p class="text-sm font-semibold opacity-90">Markers</p>
+          <p class="text-sm font-semibold opacity-90">Markers:</p>
             <p class="text-xs opacity-70">{{ props.markers.length }} total</p>
         </div>
         <div class="mt-3 grid gap-2 md:grid-cols-2">
