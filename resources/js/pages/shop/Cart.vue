@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import Button from '@/components/ui/button/Button.vue';
 import Input from '@/components/ui/input/Input.vue';
 import type { BreadcrumbItem } from '@/types';
@@ -23,6 +23,15 @@ const props = defineProps<{
   items: CartItem[];
   total_euros: number;
 }>();
+
+const page = usePage();
+
+type FlashProps = {
+  flash?: {
+    success?: string | null;
+    error?: string | null;
+  };
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Shop', href: '/shop' },
@@ -53,6 +62,13 @@ const removeItem = (productId: number) => {
             <Link href="/checkout">Checkout</Link>
           </Button>
         </div>
+      </div>
+
+      <div
+        v-if="(page.props as FlashProps).flash?.success"
+        class="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"
+      >
+        {{ (page.props as FlashProps).flash?.success }}
       </div>
 
       <div v-if="props.items.length === 0" class="rounded-xl border border-sidebar-border/70 p-4 opacity-80 dark:border-sidebar-border">

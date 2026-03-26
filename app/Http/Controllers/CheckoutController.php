@@ -144,15 +144,40 @@ class CheckoutController extends Controller
 
         $status = $order?->status ?? 'failed';
 
+        // If webhook hasn't arrived yet, confirm payment status directly from Stripe.
+        if ($order && $status !== 'succeeded') {
+            $stripeKey = (string) config('services.stripe.secret', env('STRIPE_SECRET_KEY', ''));
+            if ($stripeKey !== '') {
+                try {
+                    $client = new StripeClient($stripeKey);
+                    $session = $client->checkout->sessions->retrieve($sessionId, []);
+
+                    $paymentStatus = (string) ($session->payment_status ?? '');
+                    if ($paymentStatus === 'paid') {
+                        $order->update(['status' => 'succeeded']);
+                        $status = 'succeeded';
+                    }
+                } catch (\Throwable $e) {
+                    // Keep current status; user still sees a helpful message below.
+                }
+            }
+        }
+
         if ($status === 'succeeded') {
             (new CartService())->clear($request);
         }
 
+        $message = $status === 'succeeded'
+            ? 'Payment successful!'
+            : 'Payment status is not succeeded yet. (Try again shortly.)';
+
+        if ($status === 'succeeded') {
+            $request->session()->flash('success', 'Payment successful! Your cart is now empty.');
+        }
+
         return Inertia::render('shop/Success', [
             'status' => $status,
-            'message' => $status === 'succeeded'
-                ? 'Payment successful!'
-                : 'Payment status is not succeeded yet. (Try again shortly.)',
+            'message' => $message,
         ]);
     }
 
