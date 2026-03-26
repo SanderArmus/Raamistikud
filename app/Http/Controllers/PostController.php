@@ -31,12 +31,48 @@ class PostController extends Controller
         );
     }
 
-    public function index()
+    private function userIsAdmin(Request $request): bool
     {
+        return (bool) ($request->user()?->is_admin ?? false);
+    }
+
+    private function canEditPost(Request $request, Post $post): bool
+    {
+        if ($this->userIsAdmin($request)) {
+            return true;
+        }
+
+        $author = $this->ensureAuthorForUser($request);
+
+        return (string) $post->author_id === (string) $author->id;
+    }
+
+    public function index(Request $request)
+    {
+        $isAdmin = $this->userIsAdmin($request);
+        $author = $this->ensureAuthorForUser($request);
+
         return Inertia::render('posts/Index', [
-            'posts' => Post::query()
-                ->select(['id', 'title', 'description', 'created_at', 'updated_at'])
-                ->paginate(30),
+            'posts' => tap(
+                Post::query()
+                    ->select(['id', 'title', 'description', 'author_id', 'created_at', 'updated_at'])
+                    ->paginate(30),
+                function ($paginator) use ($isAdmin, $author) {
+                    $paginator->getCollection()->transform(function (Post $post) use ($isAdmin, $author) {
+                        $canEdit = $isAdmin || (string) $post->author_id === (string) $author->id;
+
+                        return [
+                            'id' => $post->id,
+                            'title' => $post->title,
+                            'created_at' => $post->created_at,
+                            'updated_at' => $post->updated_at,
+                            'created_at_formatted' => $post->created_at_formatted,
+                            'updated_at_formatted' => $post->updated_at_formatted,
+                            'can_edit' => $canEdit,
+                        ];
+                    });
+                }
+            ),
         ]);
     }
 
@@ -64,17 +100,22 @@ class PostController extends Controller
 
     }
 
-    public function show(Post $post)
+    public function show(Request $request, Post $post)
     {
         return Inertia::render('posts/View', [
             'post' => $post->loadMissing([
                 'comments.user',
             ]),
+            'can_edit' => $this->canEditPost($request, $post),
         ]);
     }
 
-    public function edit(Post $post)
+    public function edit(Request $request, Post $post)
     {
+        if (! $this->canEditPost($request, $post)) {
+            abort(403, 'Only the post author (or admin) can edit this post.');
+        }
+
         return Inertia::render('posts/Edit', [
             'post' => $post,
         ]);
@@ -82,23 +123,27 @@ class PostController extends Controller
 
     public function update(Request $request, Post $post)
     {
+        if (! $this->canEditPost($request, $post)) {
+            abort(403, 'Only the post author (or admin) can edit this post.');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
         ]);
 
-        // Keep posts owned by the current user.
-        $author = $this->ensureAuthorForUser($request);
-
         $post->update([
             ...$validated,
-            'author_id' => $author->id,
         ]);
         return redirect()->route('posts.index')->with('success', 'Post updated successfully.');
     }
 
-    public function destroy(Post $post)
+    public function destroy(Request $request, Post $post): RedirectResponse
     {
+        if (! $this->userIsAdmin($request)) {
+            abort(403, 'Only admins can delete posts.');
+        }
+
         $post->delete();
 
         return redirect()->back()->with('success', 'Postitus kustutatud.');
@@ -106,6 +151,10 @@ class PostController extends Controller
 
     public function bulkDestroy(Request $request): RedirectResponse
     {
+        if (! $this->userIsAdmin($request)) {
+            abort(403, 'Only admins can delete posts.');
+        }
+
         $validated = $request->validate([
             'ids' => ['required', 'array'],
             'ids.*' => ['integer', 'distinct'],
@@ -116,8 +165,12 @@ class PostController extends Controller
         return redirect()->route('posts.index')->with('success', 'Posts deleted.');
     }
 
-    public function deleteAll(): RedirectResponse
+    public function deleteAll(Request $request): RedirectResponse
     {
+        if (! $this->userIsAdmin($request)) {
+            abort(403, 'Only admins can delete posts.');
+        }
+
         Post::query()->delete();
 
         return redirect()->route('posts.index')->with('success', 'All posts deleted.');

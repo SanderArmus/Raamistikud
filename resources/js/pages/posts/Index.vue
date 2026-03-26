@@ -13,7 +13,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import AppLayout from '@/layouts/AppLayout.vue';
 import { create, destroy, edit, show, index } from '@/routes/posts';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { MoreVertical } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
@@ -72,6 +72,7 @@ export type Post = {
   updated_at: string;
   created_at_formatted: string;
   updated_at_formatted: string;
+  can_edit: boolean;
 };
 
 
@@ -80,6 +81,8 @@ const props = defineProps<{
 }>();
 
 const posts = computed(() => props.posts);
+const page = usePage();
+const isAdmin = computed(() => Boolean((page.props.auth?.user as any)?.is_admin));
 
 const selectedPostIds = ref<number[]>([]);
 
@@ -162,10 +165,22 @@ const deletePost = (postId: number) => {
       <!-- <pre>{{ posts }}</pre> -->
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-2">
-          <Button type="button" variant="destructive" :disabled="selectedPostIds.length === 0" @click="deleteSelected">
+          <Button
+            v-if="isAdmin"
+            type="button"
+            variant="destructive"
+            :disabled="selectedPostIds.length === 0"
+            @click="deleteSelected"
+          >
             Delete selected
           </Button>
-          <Button type="button" variant="outline" :disabled="posts.total === 0" @click="deleteAllPosts">
+          <Button
+            v-if="isAdmin"
+            type="button"
+            variant="outline"
+            :disabled="posts.total === 0"
+            @click="deleteAllPosts"
+          >
             Delete all
           </Button>
         </div>
@@ -226,11 +241,18 @@ const deletePost = (postId: number) => {
                     <DropdownMenuItem as-child>
                       <Link :href="show.url(post.id)">View</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem as-child>
+                    <DropdownMenuItem
+                      v-if="post.can_edit || isAdmin"
+                      as-child
+                    >
                       <Link :href="edit.url(post.id)">Edit</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem class="text-destructive" @click="deletePost(post.id)">
+                    <DropdownMenuItem
+                      v-if="isAdmin"
+                      class="text-destructive"
+                      @click="deletePost(post.id)"
+                    >
                       Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>

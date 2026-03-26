@@ -30,6 +30,7 @@ type PostPayload = {
 
 const props = defineProps<{
   post: PostPayload;
+  can_edit: boolean;
 }>();
 
 const form = useForm({
@@ -75,7 +76,7 @@ const isAdmin = computed(() => Boolean((page.props.auth?.user as any)?.is_admin)
           </div>
 
           <div class="flex flex-wrap items-center gap-3">
-            <Button as-child variant="outline">
+            <Button v-if="props.can_edit" as-child variant="outline">
               <Link :href="edit.url(props.post.id)">Edit Post</Link>
             </Button>
 
