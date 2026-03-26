@@ -15,7 +15,12 @@ hosts:
 
 tasks:
     db:setup:
-        - run: 'cd {{release_path}} && mkdir -p database && touch database/database.sqlite'
+        # Persist SQLite across releases.
+        # Create (or copy) the DB into shared/, then symlink it into the new release.
+        - run: 'mkdir -p {{shared_path}}/database'
+        - run: 'if [ ! -f {{shared_path}}/database/database.sqlite ] && [ -f {{current_path}}/database/database.sqlite ]; then cp {{current_path}}/database/database.sqlite {{shared_path}}/database/database.sqlite; fi'
+        - run: 'touch {{shared_path}}/database/database.sqlite'
+        - run: 'mkdir -p {{release_path}}/database && ln -sf {{shared_path}}/database/database.sqlite {{release_path}}/database/database.sqlite'
         - run: 'cd {{release_path}} && php artisan migrate --force'
 
     npm:production:
