@@ -5,6 +5,7 @@ import:
 config:
     repository: 'https://github.com/SanderArmus/Raamistikud.git'
     keep_releases: 2
+    ssh_multiplexing: false
 
 hosts:
     stage:
