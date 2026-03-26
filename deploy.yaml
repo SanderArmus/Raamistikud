@@ -22,6 +22,7 @@ tasks:
         - run: 'touch {{deploy_path}}/shared/database/database.sqlite'
         - run: 'mkdir -p {{release_path}}/database && ln -sf {{deploy_path}}/shared/database/database.sqlite {{release_path}}/database/database.sqlite'
         - run: 'cd {{release_path}} && php artisan migrate --force'
+        - run: 'cd {{release_path}} && count=$(php artisan tinker --no-interaction --execute="echo \\App\\Models\\Product::count();" | tr -d "\n") && if [ $count -eq 0 ]; then php artisan db:seed --force --class=ProductSeeder; fi'
 
     npm:production:
         - run: 'cd {{release_path}} && npm ci'

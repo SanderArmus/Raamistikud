@@ -14,7 +14,7 @@ import { toUrl, urlIsActive } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem, NavItem } from '@/types';
 import { InertiaLinkProps, Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, MapPin, Menu, Search } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, MapPin, Menu, Search, ShoppingCart, Store } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Props {
@@ -40,6 +40,16 @@ const mainNavItems: NavItem[] = [
         title: 'Weather',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Shop',
+        href: '/shop',
+        icon: Store,
+    },
+    {
+        title: 'Cart',
+        href: '/cart',
+        icon: ShoppingCart,
     },
     {
         title: 'Markers',

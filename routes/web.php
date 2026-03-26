@@ -14,6 +14,9 @@ Route::get('/', function () {
 // redirect loops when visiting login/register pages.
 require __DIR__.'/auth.php';
 
+// Public shop/cart/checkout routes (guest friendly)
+require __DIR__.'/shop.php';
+
 Route::middleware(['auth','verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::get('/markers', [MarkerController::class, 'index'])->name('markers.index');
