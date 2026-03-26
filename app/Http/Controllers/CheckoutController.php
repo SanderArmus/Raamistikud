@@ -65,7 +65,9 @@ class CheckoutController extends Controller
 
         $stripeKey = (string) config('services.stripe.secret', env('STRIPE_SECRET_KEY', ''));
         if ($stripeKey === '') {
-            abort(500, 'Missing STRIPE_SECRET_KEY.');
+            return redirect()
+                ->route('checkout.show')
+                ->with('error', 'Stripe is not configured yet (missing STRIPE_SECRET_KEY).');
         }
 
         $order = $this->createPendingOrder($request, $validated, $cartService);
@@ -100,16 +102,24 @@ class CheckoutController extends Controller
         $successUrl = route('checkout.success', [], true) . '?session_id={CHECKOUT_SESSION_ID}';
         $cancelUrl = route('checkout.cancel', [], true);
 
-        $session = $client->checkout->sessions->create([
-            'mode' => 'payment',
-            'line_items' => $lineItems,
-            'success_url' => $successUrl,
-            'cancel_url' => $cancelUrl,
-            'metadata' => [
-                'order_id' => (string) $order->id,
-            ],
-            'customer_email' => $validated['email'],
-        ]);
+        try {
+            $session = $client->checkout->sessions->create([
+                'mode' => 'payment',
+                'line_items' => $lineItems,
+                'success_url' => $successUrl,
+                'cancel_url' => $cancelUrl,
+                'metadata' => [
+                    'order_id' => (string) $order->id,
+                ],
+                'customer_email' => $validated['email'],
+            ]);
+        } catch (\Throwable $e) {
+            $order->update(['status' => 'failed']);
+
+            return redirect()
+                ->route('checkout.show')
+                ->with('error', 'Stripe session creation failed. Please try again later.');
+        }
 
         $order->update([
             'stripe_checkout_session_id' => (string) $session->id,
