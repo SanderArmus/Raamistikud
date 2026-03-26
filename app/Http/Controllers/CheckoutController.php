@@ -9,6 +9,7 @@ use App\Services\CartService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
 use Stripe\StripeClient;
 
 class CheckoutController extends Controller
@@ -114,11 +115,16 @@ class CheckoutController extends Controller
                 'customer_email' => $validated['email'],
             ]);
         } catch (\Throwable $e) {
+            // Log the underlying Stripe error for easier debugging in production.
+            Log::error('Stripe session creation failed', [
+                'message' => $e->getMessage(),
+                'order_id' => $order->id ?? null,
+            ]);
             $order->update(['status' => 'failed']);
 
             return redirect()
                 ->route('checkout.show')
-                ->with('error', 'Stripe session creation failed. Please try again later.');
+                ->with('error', 'Stripe session creation failed: ' . $e->getMessage());
         }
 
         $order->update([
