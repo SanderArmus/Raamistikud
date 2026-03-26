@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Services\CartService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use Stripe\StripeClient;
@@ -49,7 +50,7 @@ class CheckoutController extends Controller
         ]);
     }
 
-    public function createStripeSession(Request $request): RedirectResponse
+    public function createStripeSession(Request $request): Response
     {
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
