@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import Button from '@/components/ui/button/Button.vue';
 import Input from '@/components/ui/input/Input.vue';
 import type { BreadcrumbItem } from '@/types';
+import { ref } from 'vue';
 
 type Product = {
   id: number;
@@ -20,17 +21,21 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Shop', href: '/shop' }];
 
-const qtyByProductId = useForm<Record<string, number>>({});
+const qtyByProductId = ref<Record<number, number>>({});
 props.products.forEach((p) => {
-  qtyByProductId[p.id] = 1;
+  qtyByProductId.value[p.id] = 1;
 });
 
 const addToCart = (product: Product) => {
-  const quantity = Number(qtyByProductId[product.id] ?? 1);
-  qtyByProductId.post('/cart/add', {
+  const raw = Number(qtyByProductId.value[product.id] ?? 1);
+  const quantity = Math.max(1, Math.min(raw, Math.max(1, Number(product.stock_quantity))));
+
+  router.post('/cart/add', {
+    product_id: product.id,
+    quantity,
+  }, {
     preserveScroll: true,
-    data: { product_id: product.id, quantity },
-  } as any);
+  });
 };
 </script>
 
