@@ -131,7 +131,9 @@ class CheckoutController extends Controller
             'stripe_checkout_session_id' => (string) $session->id,
         ]);
 
-        return redirect()->away((string) $session->url);
+        // Inertia POST requests don't always follow cross-origin redirects reliably.
+        // `Inertia::location()` forces a real browser navigation to Stripe Checkout.
+        return Inertia::location((string) $session->url);
     }
 
     public function success(Request $request)
