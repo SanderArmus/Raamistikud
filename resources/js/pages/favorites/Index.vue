@@ -65,6 +65,19 @@ type FlashProps = { flash?: { success?: string | null; error?: string | null } }
         </Button>
       </div>
 
+      <div class="rounded-xl border border-sidebar-border/70 bg-background/30 p-4 text-sm dark:border-sidebar-border">
+        JSON API: <code>/api/my-favorite-subjects</code>
+        <div class="mt-1 opacity-80">
+          Examples:
+          <div class="mt-1 grid gap-1">
+            <code>/api/my-favorite-subjects?limit=5</code>
+            <code>/api/my-favorite-subjects?search=matrix</code>
+            <code>/api/my-favorite-subjects?sort=release_year&amp;direction=asc&amp;limit=10</code>
+            <code>/api/my-favorite-subjects?director=Christopher%20Nolan&amp;year_from=2010&amp;year_to=2020</code>
+          </div>
+        </div>
+      </div>
+
       <div v-if="(page.props as FlashProps).flash?.success" class="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
         {{ (page.props as FlashProps).flash?.success }}
       </div>
@@ -150,14 +163,6 @@ type FlashProps = { flash?: { success?: string | null; error?: string | null } }
           />
           <span v-else class="px-2 py-1 opacity-50" v-html="link.label" />
         </template>
-      </div>
-
-      <div class="rounded-xl border border-sidebar-border/70 bg-background/30 p-4 text-sm dark:border-sidebar-border">
-        JSON API: <code>/api/my-favorite-subjects</code>
-        <div class="mt-1 opacity-80">
-          Example:
-          <code>/api/my-favorite-subjects?search=matrix&amp;sort=release_year&amp;direction=asc&amp;limit=10</code>
-        </div>
       </div>
     </div>
   </AppLayout>
