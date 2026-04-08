@@ -37,7 +37,7 @@ const props = defineProps<{
   };
 }>();
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Favorites', href: '/favorites' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'API', href: '/favorites' }];
 
 const apply = () => {
   router.get(
@@ -54,12 +54,12 @@ type FlashProps = { flash?: { success?: string | null; error?: string | null } }
 </script>
 
 <template>
-  <Head title="Favorites" />
+  <Head title="API" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="p-6 flex flex-col gap-4">
       <div class="flex items-center justify-between gap-3">
-        <h1 class="text-2xl font-semibold">Favorites (Movies)</h1>
+        <h1 class="text-2xl font-semibold">API (Movies)</h1>
         <Button as-child>
           <Link href="/favorites/create">Add new</Link>
         </Button>

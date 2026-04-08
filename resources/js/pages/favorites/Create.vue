@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
-  { title: 'Favorites', href: '/favorites' },
+  { title: 'API', href: '/favorites' },
   { title: 'Add', href: '/favorites/create' },
 ];
 
@@ -27,7 +27,7 @@ const submit = () => {
 </script>
 
 <template>
-  <Head title="Add favorite" />
+  <Head title="Add API item" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="p-6 max-w-2xl">

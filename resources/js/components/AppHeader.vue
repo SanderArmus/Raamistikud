@@ -52,14 +52,14 @@ const mainNavItems: NavItem[] = [
         icon: BookOpen,
     },
     {
-        title: 'Favorites',
-        href: '/favorites',
-        icon: Star,
-    },
-    {
         title: 'Shop',
         href: '/shop',
         icon: Store,
+    },
+    {
+        title: 'API',
+        href: '/favorites',
+        icon: Star,
     },
 ];
 
