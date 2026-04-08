@@ -14,7 +14,7 @@ import { toUrl, urlIsActive } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem, NavItem } from '@/types';
 import { InertiaLinkProps, Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, MapPin, Menu, Search, Store } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, MapPin, Menu, Search, Star, Store } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Props {
@@ -50,6 +50,11 @@ const mainNavItems: NavItem[] = [
         title: 'Blog',
         href: '/posts',
         icon: BookOpen,
+    },
+    {
+        title: 'Favorites',
+        href: '/favorites',
+        icon: Star,
     },
     {
         title: 'Shop',

@@ -31,6 +31,7 @@ Route::middleware(['auth','verified'])->group(function () {
     require __DIR__.'/posts.php';
     require __DIR__.'/authors.php';
     require __DIR__.'/comments.php';
+    require __DIR__.'/favorites.php';
     Route::get("test", function () {
         return 'tere';
     });
