@@ -62,7 +62,7 @@ type FlashProps = { flash?: { success?: string | null; error?: string | null } }
         <h1 class="text-2xl font-semibold">API (Movies)</h1>
         <div class="flex items-center gap-2">
           <Button as-child variant="outline">
-            <Link href="/favorites/friend-api">Friend API</Link>
+              <Link href="/favorites/friend-api">Kevini filmid</Link>
           </Button>
           <Button as-child>
             <Link href="/favorites/create">Add new</Link>

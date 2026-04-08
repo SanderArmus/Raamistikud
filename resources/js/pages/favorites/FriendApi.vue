@@ -31,18 +31,18 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'API', href: '/favorites' },
-  { title: "Friend's API", href: '/favorites/friend-api' },
+  { title: 'Kevini filmid', href: '/favorites/friend-api' },
 ];
 </script>
 
 <template>
-  <Head title="Friend API" />
+  <Head title="Kevini filmid" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="p-6 flex flex-col gap-4">
       <div class="flex items-center justify-between gap-3">
         <div>
-          <h1 class="text-2xl font-semibold">Friend's API (Movies)</h1>
+          <h1 class="text-2xl font-semibold">Kevini filmid</h1>
           <div class="mt-1 text-sm opacity-80">
             Source: <code>{{ props.source_url }}</code> • cached {{ props.cached_ttl_seconds }}s
           </div>
