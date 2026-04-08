@@ -38,8 +38,12 @@ class MyFavoriteSubjectApiController extends Controller
         $sort = (string) ($validated['sort'] ?? 'created_at');
         $direction = (string) ($validated['direction'] ?? 'desc');
 
+        // Cache version increments when data changes (so new items show up immediately).
+        $version = (int) Cache::get('api:my-favorite-subjects:version', 1);
+
         // Cache key based on query params.
         $cacheKey = 'api:my-favorite-subjects:' . md5(json_encode([
+            'v' => $version,
             'limit' => $limit,
             'search' => $validated['search'] ?? null,
             'director' => $validated['director'] ?? null,
@@ -52,7 +56,7 @@ class MyFavoriteSubjectApiController extends Controller
 
         $ttlSeconds = 60;
 
-        $payload = Cache::remember($cacheKey, $ttlSeconds, function () use ($validated, $limit, $sort, $direction) {
+        $payload = Cache::remember($cacheKey, $ttlSeconds, function () use ($validated, $limit, $sort, $direction, $version) {
             $query = MyFavoriteSubject::query();
 
             if (($validated['search'] ?? '') !== '') {
@@ -93,6 +97,7 @@ class MyFavoriteSubjectApiController extends Controller
             return [
                 'data' => $items,
                 'meta' => [
+                    'cache_version' => $version,
                     'limit' => $limit,
                     'sort' => $sort,
                     'direction' => $direction,

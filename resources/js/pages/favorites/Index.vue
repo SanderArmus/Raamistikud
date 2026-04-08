@@ -60,9 +60,14 @@ type FlashProps = { flash?: { success?: string | null; error?: string | null } }
     <div class="p-6 flex flex-col gap-4">
       <div class="flex items-center justify-between gap-3">
         <h1 class="text-2xl font-semibold">API (Movies)</h1>
-        <Button as-child>
-          <Link href="/favorites/create">Add new</Link>
-        </Button>
+        <div class="flex items-center gap-2">
+          <Button as-child variant="outline">
+            <Link href="/favorites/friend-api">Friend API</Link>
+          </Button>
+          <Button as-child>
+            <Link href="/favorites/create">Add new</Link>
+          </Button>
+        </div>
       </div>
 
       <div class="rounded-xl border border-sidebar-border/70 bg-background/30 p-4 text-sm dark:border-sidebar-border">

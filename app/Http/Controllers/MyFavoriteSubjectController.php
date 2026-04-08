@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MyFavoriteSubject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class MyFavoriteSubjectController extends Controller
@@ -81,6 +82,10 @@ class MyFavoriteSubjectController extends Controller
         ]);
 
         MyFavoriteSubject::query()->create($validated);
+
+        $key = 'api:my-favorite-subjects:version';
+        $current = (int) Cache::get($key, 1);
+        Cache::put($key, $current + 1);
 
         return redirect()->route('favorites.index')->with('success', 'Added!');
     }

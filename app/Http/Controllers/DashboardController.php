@@ -14,6 +14,13 @@ class DashboardController extends Controller
      */
     public function __invoke(Request $request)
     {
+        // Tests should not depend on external network services.
+        if (app()->environment('testing')) {
+            return Inertia::render('Dashboard', [
+                'weather' => null,
+            ]);
+        }
+
         $city = trim((string) $request->query('city'));
         $country = trim((string) $request->query('country'));
 
